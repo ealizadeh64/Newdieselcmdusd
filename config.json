@@ -1,0 +1,18 @@
+{
+  "repository": "Esmaeil9ss/Tickdata",
+  "workers": 2,
+  "attempts": 4,
+  "timeout": 30,
+  "lookback_days": 3,
+  "allow_404_empty": false,
+  "instruments": {
+    "EURUSD": {"price_divisor": 100000, "digits": 5},
+    "GBPUSD": {"price_divisor": 100000, "digits": 5},
+    "AUDUSD": {"price_divisor": 100000, "digits": 5},
+    "NZDUSD": {"price_divisor": 100000, "digits": 5},
+    "USDCAD": {"price_divisor": 100000, "digits": 5},
+    "USDCHF": {"price_divisor": 100000, "digits": 5},
+    "USDJPY": {"price_divisor": 1000, "digits": 3},
+    "DIESELCMDUSD": {"price_divisor": 1000, "digits": 3}
+  }
+}
