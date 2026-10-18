@@ -1,0 +1,54 @@
+name: Daily ticks to Hugging Face
+on:
+  schedule:
+    - cron: '20 5 * * *'
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Comma-separated symbols; blank = config.json'
+        required: false
+        default: ''
+      start:
+        description: 'UTC YYYY-MM-DD; blank = 3-day lookback'
+        required: false
+        default: ''
+      end:
+        description: 'UTC YYYY-MM-DD; blank = yesterday'
+        required: false
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: daily-hf-writer
+  cancel-in-progress: false
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Download completed UTC days and upload validated files
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          SYMBOLS: ${{ inputs.symbols }}
+          START: ${{ inputs.start }}
+          END: ${{ inputs.end }}
+          HF_HUB_DISABLE_PROGRESS_BARS: '1'
+        shell: bash
+        run: |
+          args=(--upload)
+          if [[ -n "$SYMBOLS" ]]; then args+=(--symbols "$SYMBOLS"); fi
+          if [[ -n "$START" ]]; then args+=(--start "$START"); fi
+          if [[ -n "$END" ]]; then args+=(--end "$END"); fi
+          python main.py "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: daily-tick-report-${{ github.run_id }}
+          path: reports/
+          retention-days: 7
